@@ -56,10 +56,10 @@ from boltzgen.task.task import Task
 # Since we're now in src/boltzgen/, we need to go up 3 levels
 path_to_script = Path(__file__)
 project_root = (
-    path_to_script.parent.parent.parent.parent
+    path_to_script.parent.parent
 )  # Go up from src/boltzgen/cli to project root
-config_dir = project_root / "config"
-main_script = project_root / "main.py"
+config_dir = project_root / "resources/config"
+main_script = project_root / "resources/main.py"
 
 step_names = [
     "design",
@@ -122,7 +122,9 @@ ARTIFACTS: dict[str, tuple[str, str]] = {
 
 
 ### CLI arguments ###
-def add_configure_arguments(parser: argparse.ArgumentParser, *, output_required: bool = False) -> None:
+def add_configure_arguments(
+    parser: argparse.ArgumentParser, *, output_required: bool = False
+) -> None:
     # General configuration options
     p = parser.add_argument_group("general configuration")
     p.add_argument(
@@ -304,7 +306,7 @@ def add_configure_arguments(parser: argparse.ArgumentParser, *, output_required:
         nargs="+",
         help="Extra hard filters. Format: feature>threshold or feature<threshold "
         "(e.g., 'design_ALA>0.3' 'design_GLY<0.2'). Use '>' if higher is better, '<' if lower is better. "
-        "Make sure to single-quote the strings so your shell doesn\'t get confused by < and > characters.",
+        "Make sure to single-quote the strings so your shell doesn't get confused by < and > characters.",
         default=None,
     )
     p.add_argument(
@@ -320,7 +322,7 @@ def add_configure_arguments(parser: argparse.ArgumentParser, *, output_required:
         help="Threshold used for RMSD-based filters (lower is better).",
         default=None,
     )
-    
+
 
 def add_models_download_options(p: argparse.ArgumentParser) -> None:
     p = p.add_argument_group("model and data download options")
@@ -438,7 +440,9 @@ def build_download_parser(subparsers) -> argparse.ArgumentParser:
         "download",
         help="Download boltzgen model weights and supporting assets",
     )
-    group = download_parser.add_argument_group("artifacts to download (positional argument)")
+    group = download_parser.add_argument_group(
+        "artifacts to download (positional argument)"
+    )
     group.add_argument(
         "artifacts",
         nargs="+",
@@ -1104,7 +1108,7 @@ class BinderDesignPipeline:
         # Filtering
         output_dir = args.output / "final_ranked_designs"
         print(f"Final ranked designs will be saved to: {output_dir}")
-        
+
         # Build filter arguments
         filter_args = [
             f"design_dir={input_dir}",
@@ -1114,14 +1118,16 @@ class BinderDesignPipeline:
             f"filter_designfolding={do_design_folding}",
             f"budget={args.budget}",
         ]
-        
+
         # Add optional filtering arguments
         if args.alpha is not None:
             filter_args.append(f"alpha={args.alpha}")
         if args.filter_biased is not None:
             filter_args.append(f"filter_biased={args.filter_biased}")
         if args.refolding_rmsd_threshold is not None:
-            filter_args.append(f"refolding_rmsd_threshold={args.refolding_rmsd_threshold}")
+            filter_args.append(
+                f"refolding_rmsd_threshold={args.refolding_rmsd_threshold}"
+            )
         if args.metrics_override is not None:
             parsed_metrics = parse_metrics_override(args.metrics_override)
             print(f"Filtering metrics override: {parsed_metrics}")
@@ -1134,7 +1140,7 @@ class BinderDesignPipeline:
             parsed_size_buckets = parse_size_buckets(args.size_buckets)
             print(f"Filtering size buckets: {parsed_size_buckets}")
             filter_args.append(f"size_buckets={parsed_size_buckets}")
-        
+
         self.steps.append(
             PipelineStep(
                 name="filtering",
@@ -1315,89 +1321,110 @@ def parse_config_args(base_config, config_args, valid_step_names):
             config_args_by_step[step_name].extend(key_value_pairs)
     return config_args_by_step
 
+
 ### Filtering argument parsing functions ####
 def parse_metrics_override(value_list):
     """Parse metrics_override from key=value pairs."""
     if not value_list:
         return None
-    
+
     metrics_override = {}
     for item in value_list:
-        if '=' in item:
-            key, value = item.split('=', 1)
-            if value == '' or value.lower() == 'none':
+        if "=" in item:
+            key, value = item.split("=", 1)
+            if value == "" or value.lower() == "none":
                 metrics_override[key] = None  # Remove metric
             else:
                 try:
                     metrics_override[key] = float(value)
                 except ValueError:
-                    raise ValueError(f"Invalid weight value for metric '{key}': '{value}'. Must be a number.")
+                    raise ValueError(
+                        f"Invalid weight value for metric '{key}': '{value}'. Must be a number."
+                    )
         else:
-            raise ValueError(f"Invalid metrics_override format: '{item}'. Use 'metric_name=weight' format.")
+            raise ValueError(
+                f"Invalid metrics_override format: '{item}'. Use 'metric_name=weight' format."
+            )
     return metrics_override
+
 
 def parse_additional_filters(value_list):
     """Parse additional_filters from feature>threshold or feature<threshold format."""
     if not value_list:
         return None
-    
+
     additional_filters = []
     for item in value_list:
-        if '>' in item:
-            feature, threshold_str = item.split('>', 1)
+        if ">" in item:
+            feature, threshold_str = item.split(">", 1)
             try:
                 threshold = float(threshold_str)
-                additional_filters.append({
-                    "feature": feature,
-                    "threshold": threshold,
-                    "lower_is_better": False  # > means higher is better
-                })
+                additional_filters.append(
+                    {
+                        "feature": feature,
+                        "threshold": threshold,
+                        "lower_is_better": False,  # > means higher is better
+                    }
+                )
             except ValueError:
-                raise ValueError(f"Invalid threshold value: '{threshold_str}'. Must be a number.")
-        elif '<' in item:
-            feature, threshold_str = item.split('<', 1)
+                raise ValueError(
+                    f"Invalid threshold value: '{threshold_str}'. Must be a number."
+                )
+        elif "<" in item:
+            feature, threshold_str = item.split("<", 1)
             try:
                 threshold = float(threshold_str)
-                additional_filters.append({
-                    "feature": feature,
-                    "threshold": threshold,
-                    "lower_is_better": True  # < means lower is better
-                })
+                additional_filters.append(
+                    {
+                        "feature": feature,
+                        "threshold": threshold,
+                        "lower_is_better": True,  # < means lower is better
+                    }
+                )
             except ValueError:
-                raise ValueError(f"Invalid threshold value: '{threshold_str}'. Must be a number.")
+                raise ValueError(
+                    f"Invalid threshold value: '{threshold_str}'. Must be a number."
+                )
         else:
-            raise ValueError(f"Invalid additional_filters format: '{item}'. Use 'feature>threshold' or 'feature<threshold' format.")
+            raise ValueError(
+                f"Invalid additional_filters format: '{item}'. Use 'feature>threshold' or 'feature<threshold' format."
+            )
     return additional_filters
+
 
 def parse_size_buckets(value_list):
     """Parse size_buckets from min-max:count format."""
     if not value_list:
         return None
-    
+
     size_buckets = []
     for item in value_list:
-        if ':' in item and '-' in item:
-            range_part, count_str = item.split(':', 1)
-            if '-' in range_part:
-                min_str, max_str = range_part.split('-', 1)
+        if ":" in item and "-" in item:
+            range_part, count_str = item.split(":", 1)
+            if "-" in range_part:
+                min_str, max_str = range_part.split("-", 1)
                 try:
                     min_size = int(min_str)
                     max_size = int(max_str)
                     count = int(count_str)
-                    size_buckets.append({
-                        "num_designs": count,
-                        "min": min_size,
-                        "max": max_size
-                    })
+                    size_buckets.append(
+                        {"num_designs": count, "min": min_size, "max": max_size}
+                    )
                 except ValueError as e:
                     if "invalid literal" in str(e):
-                        raise ValueError(f"Invalid size_buckets format: '{item}'. All values must be integers. Use 'min-max:count' format.")
+                        raise ValueError(
+                            f"Invalid size_buckets format: '{item}'. All values must be integers. Use 'min-max:count' format."
+                        )
                     else:
                         raise e
             else:
-                raise ValueError(f"Invalid size_buckets format: '{item}'. Use 'min-max:count' format.")
+                raise ValueError(
+                    f"Invalid size_buckets format: '{item}'. Use 'min-max:count' format."
+                )
         else:
-            raise ValueError(f"Invalid size_buckets format: '{item}'. Use 'min-max:count' format.")
+            raise ValueError(
+                f"Invalid size_buckets format: '{item}'. Use 'min-max:count' format."
+            )
     return size_buckets
 
 

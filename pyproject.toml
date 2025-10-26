@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
 # [build-system]
 # requires = ["setuptools>=68", "setuptools_scm[toml]>=8"]
 # build-backend = "setuptools.build_meta"
@@ -6,7 +10,7 @@
 name = "boltzgen"
 requires-python = ">=3.9"
 #dynamic = ["version"]
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
     # Add runtime dependencies here
     "numpy==2.0.2",
@@ -39,8 +43,15 @@ dependencies = [
 # Enables the usage of setuptools_scm
 # [tool.setuptools_scm]
 
+[tool.setuptools]
+package-dir = {"" = "src"}
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
 [tool.setuptools.package-data]
-boltzgen = ["config/*", "config/**/*"]
+boltzgen = ["resources/config/**/*"]
 
 [project.scripts]
 boltzgen = "boltzgen.cli.boltzgen:main"

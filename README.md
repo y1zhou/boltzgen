@@ -370,7 +370,7 @@ The `boltzgen run` command executes the BoltzGen binder design pipeline. Here ar
 - `--config CONFIG [CONFIG ...]` - Override pipeline step configuration, in format `<step_name> <arg1>=<value1> <arg2>=<value2> ...` (example: `--config folding num_workers=4 trainer.devices=4`). Can be used multiple times.
 - `--devices DEVICES` - Number of devices to use. Default is all devices available.
 - `--num_workers NUM_WORKERS` - Number of DataLoader worker processes.
-- `--config_dir CONFIG_DIR` - Path to the directory of default config files. Default: `/home/bizon/git/foldeverything/config`
+- `--config_dir CONFIG_DIR` - Path to the directory of default config files. Default: `src/boltzgen/resources/config`
 - `--use_kernels {auto,true,false}` - Whether to use kernels. One of 'auto', 'true', or 'false'. Default: auto. If 'auto', will use kernels if the device capability is >= 8.
 - `--moldir MOLDIR` - Path to the moldir. Default: `huggingface:boltzgen/inference-data:mols.zip`
 
@@ -519,9 +519,9 @@ Below is a quick reference for the three training configurations and how to laun
 
 | Config file | Purpose | Example command |
 |-------------|---------|-----------------|
-| `config/train/boltzgen_small.yaml` | Train the **small** Boltzgen model (recommended for development, 8 GPUs, gradient accumulation 16) | `python main.py config/train/boltzgen_small.yaml  name=boltzgen_small` |
-| `config/train/boltzgen.yaml` | Train the **large** BoltzGen model | `python main.py config/train/boltzgen.yaml        name=boltzgen_large` |
-| `config/train/inverse_folding.yaml` | Train the **inverse-folding** model only | `python main.py config/train/inverse_folding.yaml name=boltzgen_if` |
+| `src/boltzgen/resources/config/train/boltzgen_small.yaml` | Train the **small** Boltzgen model (recommended for development, 8 GPUs, gradient accumulation 16) | `python src/boltzgen/resources/main.py src/boltzgen/resources/config/train/boltzgen_small.yaml  name=boltzgen_small` |
+| `src/boltzgen/resources/config/train/boltzgen.yaml` | Train the **large** BoltzGen model | `python src/boltzgen/resources/main.py src/boltzgen/resources/config/train/boltzgen.yaml        name=boltzgen_large` |
+| `src/boltzgen/resources/config/train/inverse_folding.yaml` | Train the **inverse-folding** model only | `python src/boltzgen/resources/main.py src/boltzgen/resources/config/train/inverse_folding.yaml name=boltzgen_if` |
 
 If you store the data somewhere other than `./training_data`, search and replace that path **in all three YAML files**.  Typical keys you may need to update are `target_dir`, `msa_dir`, `moldir`, `pretrained`, `folding_checkpoint`, `monomer_target_dir`, and `ligand_target_dir`.
 
@@ -545,7 +545,7 @@ Small model on 8 GPUs gradient accumulation 16 (recommended dev setup):
 
 ```bash
 CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 \
-python main.py config/train/boltzgen_small.yaml \
+python src/boltzgen/resources/main.py src/boltzgen/resources/config/train/boltzgen_small.yaml \
        name=boltzgen_small
 ```
 
@@ -553,7 +553,7 @@ Large model:
 
 ```bash
 CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 \
-python main.py config/train/boltzgen.yaml \
+python src/boltzgen/resources/main.py src/boltzgen/resources/config/train/boltzgen.yaml \
        name=boltzgen_large
 ```
 
@@ -561,7 +561,7 @@ Inverse-folding model:
 
 ```bash
 CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 \
-python main.py config/train/inverse_folding.yaml \
+python src/boltzgen/resources/main.py src/boltzgen/resources/config/train/inverse_folding.yaml \
        name=boltzgen_if
 ```
 
@@ -571,7 +571,7 @@ Note: the large model currently expects additional distillation datasets (to be 
 
 ```bash
 CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 \
-python main.py config/train/boltzgen_small.yaml \
+python src/boltzgen/resources/main.py src/boltzgen/resources/config/train/boltzgen_small.yaml \
        pretrained=./training_data/boltzgen1_structuretrained_small.ckpt \
        name=boltzgen_small_pretrained
 ```
