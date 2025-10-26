@@ -6,7 +6,7 @@
 name = "boltzgen"
 requires-python = ">=3.9"
 #dynamic = ["version"]
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
     # Add runtime dependencies here
     "numpy==2.0.2",
