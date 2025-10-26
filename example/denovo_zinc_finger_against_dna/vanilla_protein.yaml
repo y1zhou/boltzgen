@@ -1,0 +1,12 @@
+entities:
+
+  - protein: 
+      id: G
+      sequence: 40..120
+  - file:
+      path: zf.cif
+      include: 
+        - chain:
+            id: C1
+        - chain:
+            id: B1

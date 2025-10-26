@@ -1,0 +1,34 @@
+entities:
+  - protein:
+      id: B
+      sequence: 1C11..16C1
+
+      secondary_structure:
+          sheet: 1,3..11
+
+  - file:
+      path: 7nre.cif
+      include:
+        - chain:
+            id: A
+            res_index: 24..
+      
+      binding_types:
+        - chain:
+            id: A
+            binding: 26..31,381,408
+
+      include_proximity:
+        - chain: 
+            id: A
+            res_index: 26..31,381,408
+            radius: 28
+
+      
+  
+
+constraints:
+  - bond:
+      atom1: [B, 2, SG] 
+      atom2: [B, 14, SG]
+

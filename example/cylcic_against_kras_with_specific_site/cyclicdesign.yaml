@@ -1,0 +1,19 @@
+entities:
+  - protein: 
+      id: B
+      sequence: 8..16
+      cyclic: true
+  - file:
+      path: 8jjs.cif
+       
+      include: 
+        - chain:
+            id: A
+        - chain:
+            id: C
+
+      binding_types:
+        - chain:
+            id: A
+            binding: 12,14,61,63,73,76,77,83,101,104,108
+          

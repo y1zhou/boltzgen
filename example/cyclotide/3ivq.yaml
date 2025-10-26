@@ -1,0 +1,25 @@
+entities:
+  - protein: 
+      id: B
+      sequence: 3C8C6C5C3C1C2
+      cyclic: true
+
+  - file:
+      path: 3ivq.cif
+       
+      include:
+        - chain:
+            id: A
+
+      structure_groups: "all"
+
+constraints:
+  - bond:
+      atom1: [B, 4, SG] 
+      atom2: [B, 26, SG]
+  - bond:
+      atom1: [B, 13, SG] 
+      atom2: [B, 30, SG]
+  - bond:
+      atom1: [B, 20, SG] 
+      atom2: [B, 32, SG]

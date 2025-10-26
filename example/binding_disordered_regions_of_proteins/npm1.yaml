@@ -1,0 +1,20 @@
+entities:
+  - protein:
+      id: G
+      sequence: 40..80
+  - file:
+      path: npm1.cif
+      include:
+        - chain:
+            id: A
+      binding_types:
+        - chain:
+            id: A
+            binding: 123..240
+            not_binding: 1..122
+      structure_groups:
+        - group:
+            visibility: 1
+            id: A
+            res_index: 12..118, 243..291
+        

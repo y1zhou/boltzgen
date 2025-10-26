@@ -1,0 +1,30 @@
+entities:
+  - file:
+      path: zf.cif
+      include: "all"
+      exclude:
+        - chain:
+            id: A1
+            res_index: ..10,63..69,185..
+      design_insertions:
+        - insertion:
+            id: A1
+            res_index: 63 
+            num_residues: 3..8
+          
+      structure_groups:
+        - group:
+            visibility: 0
+            id: "all"
+
+      design:
+        - chain:
+            id: A1
+            res_index: 11..184
+      not_design:
+        - chain:
+            id: A1
+            res_index: 11..20,29,33,39..48,57,61,72..81,90,94,100..109,118,122,129..138,147,151,157..166,175,179
+      reset_res_index:
+        - chain:
+            id: A1

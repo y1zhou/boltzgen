@@ -1,0 +1,33 @@
+entities:
+  - file:
+      path: 9d3d.cif
+       
+      include:
+        - chain:
+            id: A
+        - chain:
+            id: B
+        - chain:
+            id: C
+
+      include_proximity:
+        - chain: 
+            id: G
+            res_index: 106..118
+            radius: 30
+      
+      binding_types:
+        - chain:
+            id: A
+            binding: 91,128,131
+        - chain:
+            id: B
+            binding: 91,128,131
+        - chain:
+            id: C
+            binding: 91,128,131
+
+  - protein:
+      id: E
+      sequence: 8..18
+      cyclic: True

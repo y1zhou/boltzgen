@@ -1,0 +1,40 @@
+entities:
+  - protein:
+      id: B
+      sequence: 40..80
+  - file:
+      path: hoxd13.cif
+      include: 
+        - chain:
+            id: A 
+            res_index: ..71
+      structure_groups:
+        - group:
+            visibility: 0
+            id: "all"
+      binding_types:
+        - chain:
+            id: A
+            binding: 57..71
+
+  
+  - protein:
+      id: C
+      fuse: A
+      sequence: AAAAAAAA
+      binding_types: BBBBBBBB
+  - file:
+      path: hoxd13.cif
+      fuse: A
+      include:
+        - chain:
+            id: A
+            res_index: 72..
+      structure_groups:
+        - group:
+            visibility: 0
+            id: "all"
+        - group:
+            visibility: 1
+            id: A
+            res_index: 281..

@@ -1,0 +1,14 @@
+entities:
+  - protein:
+      id: G
+      sequence: 40..80
+  - file:
+      path: nup98.cif
+      include:
+        - chain:
+            id: A
+            res_index: 1..400
+      structure_groups:
+        - group:
+            visibility: 0
+            id: "all"

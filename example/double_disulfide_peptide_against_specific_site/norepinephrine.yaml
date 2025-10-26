@@ -1,0 +1,24 @@
+entities:
+  - protein:
+      id: B
+      sequence: 1..3CC4C1..3C1..3
+
+  - file:
+      path: 8wtw.cif
+       
+      include: 
+        - chain:
+            id: A
+
+      binding_types:
+        - chain:
+            id: A
+            binding: 24
+          
+constraints:
+  - bond:
+      atom1: [B, 2, SG] 
+      atom2: [B, 10, SG]
+  - bond:
+      atom1: [B, 3, SG] 
+      atom2: [B, 8, SG]
