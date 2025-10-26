@@ -39,6 +39,9 @@ dependencies = [
 # Enables the usage of setuptools_scm
 # [tool.setuptools_scm]
 
+[tool.setuptools.package-data]
+boltzgen = ["config/*", "config/**/*"]
+
 [project.scripts]
 boltzgen = "boltzgen.cli.boltzgen:main"
 
