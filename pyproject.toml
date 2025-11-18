@@ -8,9 +8,9 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "boltzgen"
-requires-python = ">=3.9"
-version = "0.1.4"
-readme = "README.md"
+requires-python = ">=3.11"
+version = "0.1.5"
+readme = { file = "PYPI_DESCRIPTION.md", content-type = "text/markdown" }
 description = "Protein design"
 dependencies = [
     # Add runtime dependencies here
