@@ -28,6 +28,12 @@ design:
 structure_groups:
   - group:
       id: D
+      visibility: 2
+  - group:
+      id: C
+      visibility: 2
+  - group:
+      id: D
       res_index: 26..32,52..57,99..105
       visibility: 0
   - group:
