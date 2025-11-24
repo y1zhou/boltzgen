@@ -646,19 +646,19 @@ def parse_range(ranges, c_start=0, c_end=None):
         if re.fullmatch(r"\d+", spec):
             # Single number. Convert it from 1 indexed to 0 indexed.
             start = int(spec) - 1
-            end = int(spec) - 1
+            end = start
             indices.append(c_start + start)
-        elif re.fullmatch(r"\d+..\d+", spec):
+        elif re.fullmatch(r"\d+\.\.\d+", spec):
             # Range with start and end. Convert the start from 1 indexed to 0 indexed. Leave the end untouched because the specification is inclusive (+1) but 1 indexed (-1).
             start, end = map(int, spec.split(".."))
             start -= 1
             indices += list(range(c_start + start, c_start + end))
-        elif re.fullmatch(r"..\d+", spec):
+        elif re.fullmatch(r"\.\.\d+", spec):
             # Range that is inclusive of the specified end (which is specified in a 1 indexed fashion).
             end = int(spec.replace("..", ""))
             start = 0
             indices += list(range(c_start, c_start + end))
-        elif re.fullmatch(r"\d+..", spec):
+        elif re.fullmatch(r"\d+\.\.", spec):
             assert c_end is not None
             # Range that is inclusive of the specified start (which is specified in a 1 indexed fashion).
             start = int(spec.replace("..", ""))
