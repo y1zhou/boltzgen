@@ -185,7 +185,7 @@ Small example of a protein design against a target protein without binding site 
 ```yaml
 entities:
   # Designed protein with between 80 and 140 residues 
-  # (The lenght is randomly sampled)
+  # (The length is randomly sampled)
   - protein: 
       id: B
       sequence: 80..140
