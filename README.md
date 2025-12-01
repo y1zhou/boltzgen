@@ -475,6 +475,34 @@ boltzgen execute [-h] [--no_subprocess] [--steps {design,inverse_folding,design_
 - `--no_subprocess` - Run each step in the main process. Will cause issues when devices >1.
 - `--steps {design,inverse_folding,design_folding,folding,affinity,analysis,filtering} [{design,inverse_folding,design_folding,folding,affinity,analysis,filtering} ...]` - Run only the specified pipeline steps (default: run all steps)
 
+## `boltzgen merge`
+
+If you produced designs across multiple pipeline runs (e.g. for parallelization) you can merge the finished outputs into one directory and then rerun the fast filtering step on the combined set.
+
+### Example
+```bash
+boltzgen merge workbench/run_a workbench/run_b workbench/run_c \
+  --output workbench/merged_run
+
+# Now rerun filtering (with any tweaked parameters you like)
+boltzgen run example/vanilla_protein/1g13prot.yaml \
+  --steps filtering \
+  --output workbench/merged_run \
+  --protocol protein-anything \
+  --budget 60 \
+  --alpha 0.05
+```
+
+### Usage
+```bash
+boltzgen merge [-h] [--overwrite] --output OUTPUT source [source ...]
+```
+
+### Arguments
+- `source` (positional) – One or more BoltzGen output directories that already contain folded/analyzed results (i.e., the directories you previously passed to `--output` when running the pipeline).
+- `--output OUTPUT` – Destination directory for the merged data. The command creates (or replaces) the design artifacts inside this folder so that `boltzgen run --steps filtering --output OUTPUT ...` can be executed afterwards.
+- `--overwrite` – Allow the destination directory (and its design subdirectory) to be replaced if they already exist.
+
 # Training BoltzGen models
 Install in dev mode which will install additional packages like `wandb`.
 ```bash
