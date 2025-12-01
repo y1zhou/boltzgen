@@ -180,6 +180,12 @@ def add_configure_arguments(
         help="Path to the moldir. Default: %(default)s",
         default=ARTIFACTS["moldir"][0],
     )
+    p.add_argument(
+        "--reuse",
+        action="store_true",
+        help="Reuse existing results across all steps. Generate only as many new designs are "
+        "needed to achieve the specified total number of designs.",
+    )
 
     # Design configuration options
     p = parser.add_argument_group("design")
@@ -350,12 +356,6 @@ def add_models_download_options(p: argparse.ArgumentParser) -> None:
 
 def add_execute_core_arguments(p: argparse.ArgumentParser) -> None:
     p = p.add_argument_group("execution options")
-    p.add_argument(
-        "--reuse",
-        action="store_true",
-        help="Reuse existing results across all steps. Generate only as many new designs are "
-        "needed to achieve the specified total number of designs.",
-    )
     p.add_argument(
         "--no_subprocess",
         dest="subprocess",
