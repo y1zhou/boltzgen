@@ -27,7 +27,7 @@ if [[ "$MODE" == "submit" ]]; then
     mkdir -p "$OUT"
     mkdir -p "$LOGS"
 
-    sbatch -A "$ACCOUNT" -t "$TIME" --export=ALL --array=1-$NUM_TASKS -o $LOGS/stdout.%A-%a.log -e $LOGS/stderr.%A-%a.log ../../slurm-example/run_job_array.slurm \
+    sbatch -A "$ACCOUNT" -t "$TIME" --export=ALL --array=1-$NUM_TASKS -o $LOGS/stdout.%A-%a.log -e $LOGS/stderr.%A-%a.log run_job_array.slurm \
         "$DESIGN_SPEC" "$OUT" "$NUM_DESIGNS_PER_TASK" "$CONDA_ENVIRONMENT" --protocol protein-anything --cache "$CACHE_DIR"
     squeue --me
 
