@@ -363,6 +363,9 @@ boltzgen run example/binding_disordered_peptides/tpp4.yaml \
   --alpha 0.2
 ```
 
+# Running on SLURM
+See [slurm-example](slurm-example).
+
 # All command line arguments
 
 ## `boltzgen run`
