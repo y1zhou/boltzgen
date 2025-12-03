@@ -496,13 +496,12 @@ boltzgen run example/vanilla_protein/1g13prot.yaml \
 
 ### Usage
 ```bash
-boltzgen merge [-h] [--overwrite] --output OUTPUT source [source ...]
+boltzgen merge [-h] --output OUTPUT source [source ...]
 ```
 
 ### Arguments
 - `source` (positional) – One or more BoltzGen output directories that already contain folded/analyzed results (i.e., the directories you previously passed to `--output` when running the pipeline).
 - `--output OUTPUT` – Destination directory for the merged data. The command creates (or replaces) the design artifacts inside this folder so that `boltzgen run --steps filtering --output OUTPUT ...` can be executed afterwards.
-- `--overwrite` – Allow the destination directory (and its design subdirectory) to be replaced if they already exist.
 
 # Training BoltzGen models
 Install in dev mode which will install additional packages like `wandb`.

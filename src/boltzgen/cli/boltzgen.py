@@ -508,7 +508,7 @@ def build_merge_parser(subparsers) -> argparse.ArgumentParser:
     merge_parser.add_argument(
         "--overwrite",
         action="store_true",
-        help="Allow reusing an existing destination; the merged design directory will be replaced if it exists.",
+        help="Ignored: kept temporarily for backwards compatibility. In all cases, the destination data is overwritten.",
     )
     return merge_parser
 
@@ -1632,34 +1632,32 @@ def merge_command(args: argparse.Namespace) -> None:
     def _copy_path(src: Path, dst: Path, *, required: bool) -> None:
         if src.exists():
             dst.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(src, dst)
+            if dst.exists():
+                dst.unlink()
+            # Try to make a hard link if possible, otherwise copy
+            try:
+                os.link(src, dst)
+            except OSError:
+                shutil.copy2(src, dst)
         elif required:
             raise FileNotFoundError(f"Required file missing during merge: {src}")
 
     if not args.sources:
         raise ValueError("Provide at least one source directory to merge.")
 
+    dest_root = args.output.expanduser().resolve()
+
     source_roots: list[Path] = []
     for src in args.sources:
         root = Path(src).expanduser().resolve()
+        if root == dest_root:
+            print(f"Skipping {root} as it is the destination directory")
+            continue
         if not root.exists() or not root.is_dir():
             raise FileNotFoundError(f"Source directory not found: {root}")
         source_roots.append(root)
 
-    dest_root = args.output.expanduser().resolve()
-    if dest_root.exists():
-        if not dest_root.is_dir():
-            raise ValueError(f"Output path exists and is not a directory: {dest_root}")
-        if args.overwrite:
-            shutil.rmtree(dest_root)
-            dest_root.mkdir(parents=True)
-        elif any(dest_root.iterdir()):
-            raise ValueError(
-                f"Output directory {dest_root} already exists. "
-                "Use --overwrite to reuse it."
-            )
-    else:
-        dest_root.mkdir(parents=True)
+    dest_root.mkdir(parents=True, exist_ok=True)
 
     run_tags = {
         root: _slugify_run_tag(root, idx + 1) for idx, root in enumerate(source_roots)
