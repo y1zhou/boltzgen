@@ -528,7 +528,7 @@ unzip msa.zip          # → training_data/msa/
 
 # ─ Small-molecule dictionary ─
 wget -O mols.zip "https://huggingface.co/datasets/boltzgen/inference-data/resolve/main/mols.zip?download=true"
-unzip mols.zip         # → training_data/mols/
+mkdir mols && cd mols && unzip ../mols.zip && cd ..
 
 # ─ Folding checkpoint  ─
 wget -O boltz2_fold.ckpt "https://huggingface.co/boltzgen/boltzgen-1/resolve/main/boltz2_conf_final.ckpt?download=true"
