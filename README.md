@@ -151,7 +151,7 @@ When the pipeline completes your output directory will have:
 | protein-anything         | Design proteins to bind proteins or peptides                              | Includes `design folding` step. |
 | peptide-anything         | Design (cyclic) peptides or others to bind proteins | No Cys are generated in inverse folding. No `design folding` step. Don't compute largest hydrophobic patch. |
 | protein-small_molecule   | Design proteins to bind small molecules                                | Includes binding affinity prediction. Includes `design folding` step. |
-| nanobody-anything        | Design nanobodies (single-domain antibodies)                           | No Cys are generated in inverse folding. No `design folding` step. Don't compute largest hydrophobic patch. |
+| antibody-anything        | Design nanobodies, scFvs, fabs, or IGGs                 | No Cys are generated in inverse folding. No `design folding` step. Don't compute largest hydrophobic patch. |
 
 All configuration parameters can be overridden using the `--config` option; see `boltzgen run --help` or the `Advanced Users` section below for details.
 
@@ -177,7 +177,8 @@ We provide many example `.yaml` files in the `example/` directory, including:
 - `example/design_spec_showcasing_all_functionalities.yaml`
 - `example/vanilla_peptide_with_target_binding_site/beetletert.yaml`
 - `example/peptide_against_specific_site_on_ragc/rragc.yaml`
-- `example/nanobody_against_penguinpox/penguinpox.yaml`
+- `example/nanobody/penguinpox.yaml`
+- `example/fab_antibody/pdl1.yaml`
 - `example/denovo_zinc_finger_against_dna/zinc_finger.yaml`
 - `example/protein_binding_small_molecule/chorismite.yaml`
 
@@ -371,7 +372,7 @@ The `boltzgen run` command executes the BoltzGen binder design pipeline. Here ar
 - `design_spec` - Path(s) to design specification YAML file(s), or a directory containing prepared configs
 
 ### General Configuration
-- `--protocol {protein-anything,peptide-anything,protein-small_molecule,nanobody-anything}` - Protocol to use for the design. This determines default settings and in some cases what steps are run. Default: protein-anything. See [Protocols](#protocols) section for details.
+- `--protocol {protein-anything,peptide-anything,protein-small_molecule,antibody-anything}` - Protocol to use for the design. This determines default settings and in some cases what steps are run. Default: protein-anything. See [Protocols](#protocols) section for details.
 - `--output OUTPUT` - Output directory for pipeline results
 - `--config CONFIG [CONFIG ...]` - Override pipeline step configuration, in format `<step_name> <arg1>=<value1> <arg2>=<value2> ...` (example: `--config folding num_workers=4 trainer.devices=4`). Can be used multiple times.
 - `--devices DEVICES` - Number of devices to use. Default is all devices available.
@@ -379,6 +380,7 @@ The `boltzgen run` command executes the BoltzGen binder design pipeline. Here ar
 - `--config_dir CONFIG_DIR` - Path to the directory of default config files. Default: `src/boltzgen/resources/config`
 - `--use_kernels {auto,true,false}` - Whether to use kernels. One of 'auto', 'true', or 'false'. Default: auto. If 'auto', will use kernels if the device capability is >= 8.
 - `--moldir MOLDIR` - Path to the moldir. Default: `huggingface:boltzgen/inference-data:mols.zip`
+- `--reuse` - Reuse existing results across all steps. Generate only as many new designs are needed to achieve the specified total number of designs.
 
 ### Design
 - `--num_designs NUM_DESIGNS` - Number of total designs to generate. This commonly would be something like 10,000. After generating 10,000 designs we then filter down to `--budget` many designs in the filter step
@@ -408,7 +410,6 @@ The `boltzgen run` command executes the BoltzGen binder design pipeline. Here ar
 - `--refolding_rmsd_threshold REFOLDING_RMSD_THRESHOLD` - Threshold used for RMSD-based filters (lower is better).
 
 ### Execution Options
-- `--reuse` - Reuse existing results across all steps. Generate only as many new designs are needed to achieve the specified total number of designs.
 - `--no_subprocess` - Run each step in the main process. Will cause issues when devices >1.
 - `--steps {design,inverse_folding,design_folding,folding,affinity,analysis,filtering} [{design,inverse_folding,design_folding,folding,affinity,analysis,filtering} ...]` - Run only the specified pipeline steps (default: run all steps). See [The individual pipeline steps](#the-individual-pipeline-steps) section for details.
 
@@ -451,7 +452,8 @@ For more control over your design process, you can separate the configuration ge
 boltzgen configure example/cyclotide/3ivq.yaml \
   --output workbench/test-peptide-protein \
   --protocol peptide-anything \
-  --num_designs 2
+  --num_designs 2 \
+  --reuse
 ```
 
 This creates configuration files in `workbench/test-peptide-protein/` without running the actual design pipeline. You can edit these files if needed and then run `boltzgen execute workbench/test-peptide-protein` to run the workflow.
@@ -464,16 +466,43 @@ The `boltzgen execute` command executes a pre-configured pipeline from a directo
 
 ### Usage
 ```bash
-boltzgen execute [-h] [--reuse] [--no_subprocess] [--steps {design,inverse_folding,design_folding,folding,affinity,analysis,filtering} [{design,inverse_folding,design_folding,folding,affinity,analysis,filtering} ...]] output
+boltzgen execute [-h] [--no_subprocess] [--steps {design,inverse_folding,design_folding,folding,affinity,analysis,filtering} [{design,inverse_folding,design_folding,folding,affinity,analysis,filtering} ...]] output
 ```
 
 ### Positional Arguments
 - `output` - Directory containing pre-configured pipeline files (generated by 'configure' command)
 
 ### Execution Options
-- `--reuse` - Reuse existing results across all steps. Generate only as many new designs are needed to achieve the specified total number of designs.
 - `--no_subprocess` - Run each step in the main process. Will cause issues when devices >1.
 - `--steps {design,inverse_folding,design_folding,folding,affinity,analysis,filtering} [{design,inverse_folding,design_folding,folding,affinity,analysis,filtering} ...]` - Run only the specified pipeline steps (default: run all steps)
+
+## `boltzgen merge`
+
+If you produced designs across multiple pipeline runs (e.g. for parallelization) you can merge the finished outputs into one directory and then rerun the fast filtering step on the combined set.
+
+### Example
+```bash
+boltzgen merge workbench/run_a workbench/run_b workbench/run_c \
+  --output workbench/merged_run
+
+# Now rerun filtering (with any tweaked parameters you like)
+boltzgen run example/vanilla_protein/1g13prot.yaml \
+  --steps filtering \
+  --output workbench/merged_run \
+  --protocol protein-anything \
+  --budget 60 \
+  --alpha 0.05
+```
+
+### Usage
+```bash
+boltzgen merge [-h] [--overwrite] --output OUTPUT source [source ...]
+```
+
+### Arguments
+- `source` (positional) – One or more BoltzGen output directories that already contain folded/analyzed results (i.e., the directories you previously passed to `--output` when running the pipeline).
+- `--output OUTPUT` – Destination directory for the merged data. The command creates (or replaces) the design artifacts inside this folder so that `boltzgen run --steps filtering --output OUTPUT ...` can be executed afterwards.
+- `--overwrite` – Allow the destination directory (and its design subdirectory) to be replaced if they already exist.
 
 # Training BoltzGen models
 Install in dev mode which will install additional packages like `wandb`.
