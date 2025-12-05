@@ -93,7 +93,10 @@ protocol_configs = {
         "filtering": ["use_affinity=true"],
     },
     "nanobody-anything": {
-        # Similar to peptide-anything we also avoid cysteins in inverse folding by default.
+        "analysis": ["largest_hydrophobic=false", "largest_hydrophobic_refolded=false"],
+        "filtering": ["filter_cysteine=true"],
+    },
+    "antibody-anything": {
         "analysis": ["largest_hydrophobic=false", "largest_hydrophobic_refolded=false"],
         "filtering": ["filter_cysteine=true"],
     },
@@ -260,7 +263,7 @@ def add_configure_arguments(
         default=None,
         help="Disallowed residues as a string of one letter amino acid codes, e.g. 'KEC'. "
         "This is implemented at the inverse fold step, so it only affects results if inverse folding is "
-        "enabled. Default: none for protein design, 'C' for peptide and nanobody design. Pass an empty list if you want Cysteins to be generated if you are using a nanobody or peptide protocol",
+        "enabled. Default: none for protein design, 'C' for peptide and antibody/nanobody design. Pass an empty list if you want Cysteins to be generated if you are using antibody/nanobody/peptide protocol",
     )
     p.add_argument(
         "--only_inverse_fold",
@@ -1026,7 +1029,7 @@ class BinderDesignPipeline:
                     if args.inverse_fold_avoid is not None
                     else (
                         "C"
-                        if protocol in ["peptide-anything", "nanobody-anything"]
+                        if protocol in ["peptide-anything", "nanobody-anything", "antibody-anything"]
                         else ""
                     )
                 )
