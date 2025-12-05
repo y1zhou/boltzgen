@@ -153,6 +153,7 @@ When the pipeline completes your output directory will have:
 | protein-small_molecule   | Design proteins to bind small molecules                                | Includes binding affinity prediction. Includes `design folding` step. |
 | antibody-anything        | Design antibody CDRs      | No Cys are generated in inverse folding. No `design folding` step. Don't compute largest hydrophobic patch. |
 | nanobody-anything        | Design nanobody CDRs      | Same settings as antibody-anything |
+
 All configuration parameters can be overridden using the `--config` option; see `boltzgen run --help` or the `Advanced Users` section below for details.
 
 
