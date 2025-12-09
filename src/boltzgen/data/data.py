@@ -907,7 +907,7 @@ class Structure(NumpySerializable):
         old_to_new = {old.item(): new for new, old in enumerate(atom_indices)}
         old_to_new_res = {old.item(): new for new, old in enumerate(res_indices)}
 
-        old_to_new_res_chain = {}
+        res_chain_map = {}
 
         for i in range(len(residues)):
             original_atom_range = np.arange(
@@ -966,8 +966,7 @@ class Structure(NumpySerializable):
             chain_start = orig_chain["res_idx"]
             chain_end = orig_chain["res_idx"] + orig_chain["res_num"]
             chain_res_indices = [r for r in res_indices if chain_start <= r < chain_end]
-            chain_res_indices -= orig_chain["res_idx"]
-            old_to_new_res_chain[i] = {
+            res_chain_map[i] = {
                 old.item(): new for new, old in enumerate(chain_res_indices)
             }
 
@@ -996,8 +995,8 @@ class Structure(NumpySerializable):
                     chain_atom_start = chain["atom_idx"]
                     chain_atom_end = chain["atom_idx"] + chain["atom_num"]
                     if chain_atom_start <= res["atom_idx"] < chain_atom_end:
-                        res_idx_item = residues[i]["res_idx"].item()
-                        residues[i]["res_idx"] = old_to_new_res_chain[chain_idx].get(
+                        res_idx_item = res_indices[i]
+                        residues[i]["res_idx"] = res_chain_map[chain_idx].get(
                             res_idx_item
                         )
 
