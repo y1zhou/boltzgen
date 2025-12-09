@@ -1758,6 +1758,18 @@ def biotite_array_from_feat(feat):
         atom_pad_mask & atom_resolved_mask
     ].bool()
 
+    # add chain design mask
+    chain_design_mask = feat["chain_design_mask"].bool()
+    atom_chain_design_mask = (
+        (feat["atom_to_token"].float() @ chain_design_mask.unsqueeze(-1).float())
+        .bool()
+        .squeeze()
+    )
+    atom_array.add_annotation("is_chain_design", bool)
+    atom_array.is_chain_design = atom_chain_design_mask[
+        atom_pad_mask & atom_resolved_mask
+    ].bool()
+
     return atom_array
 
 
