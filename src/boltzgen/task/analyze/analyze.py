@@ -1039,6 +1039,11 @@ class Analyze(Task):
             if self.delta_sasa_refolded:
                 cif_path_refolded = self.refold_cif_dir / f"{feat['id']}.cif"
 
+                if not cif_path_refolded.exists():
+                    msg = f"Refolded cif path does not exist. This can happen if a process was interrupted between writing the refold .npz file and the refold .cif file. Missing path: {cif_path_refolded}"
+                    print(msg)
+                    return None
+
                 # Compute delta sasa
                 (
                     delta_sasa_refolded,
