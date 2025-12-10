@@ -569,11 +569,11 @@ class Analyze(Task):
 
         # Get masks
         design_mask = feat["design_mask"].bool()
-        design_mask_for_chain = feat["asym_id"] == design_chain_id
+        chain_design_mask   = feat["chain_design_mask"].bool() 
 
         design_resolved_mask = design_mask & feat["token_resolved_mask"].bool()
 
-        target_resolved_mask = (~design_mask_for_chain) & feat["token_resolved_mask"].bool()
+        target_resolved_mask = (~chain_design_mask) & feat["token_resolved_mask"].bool()
         atom_design_resolved_mask = (
             (feat["atom_to_token"].float() @ design_resolved_mask.unsqueeze(-1).float())
             .bool()
@@ -590,7 +590,7 @@ class Analyze(Task):
         atom_chain_mask = (
             (
                 feat["atom_to_token"].float()
-                @ design_mask_for_chain.unsqueeze(-1).float()
+                @ chain_design_mask.unsqueeze(-1).float()
             )
             .bool()
             .squeeze()
