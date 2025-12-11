@@ -153,6 +153,10 @@ class Analyze(Task):
         self.slurm = slurm
         self.diversity_subset = diversity_subset
 
+        # Prevent each worker process from spawning its own multithreaded pools
+        torch.set_num_threads(1)
+        torch.set_num_interop_threads(1)
+
         if design_dir is not None:
             self.init_datasets(design_dir, load_dataset=False)
 
@@ -565,8 +569,11 @@ class Analyze(Task):
 
         # Get masks
         design_mask = feat["design_mask"].bool()
+        chain_design_mask   = feat["chain_design_mask"].bool() 
+
         design_resolved_mask = design_mask & feat["token_resolved_mask"].bool()
-        target_resolved_mask = ~design_mask & feat["token_resolved_mask"].bool()
+
+        target_resolved_mask = (~chain_design_mask) & feat["token_resolved_mask"].bool()
         atom_design_resolved_mask = (
             (feat["atom_to_token"].float() @ design_resolved_mask.unsqueeze(-1).float())
             .bool()
@@ -580,11 +587,10 @@ class Analyze(Task):
         atom_resolved_mask = feat["atom_resolved_mask"]
         resolved_atoms_design_mask = atom_design_resolved_mask[atom_resolved_mask]
         resolved_atoms_target_mask = atom_target_resolved_mask[atom_resolved_mask]
-        design_mask_for_chain = feat["asym_id"] == design_chain_id
         atom_chain_mask = (
             (
                 feat["atom_to_token"].float()
-                @ design_mask_for_chain.unsqueeze(-1).float()
+                @ chain_design_mask.unsqueeze(-1).float()
             )
             .bool()
             .squeeze()
@@ -665,7 +671,11 @@ class Analyze(Task):
                 delta_sasa_orig,
                 design_sasa_unbound,
                 design_sasa_bound,
-            ) = get_delta_sasa(path, resolved_atoms_target_mask)
+            ) = get_delta_sasa(
+                path,
+                atom_target_mask=resolved_atoms_target_mask,
+                atom_design_mask=resolved_atoms_design_mask,
+            )
             metrics["delta_sasa_original"] = delta_sasa_orig
             metrics["design_sasa_unbound_original"] = design_sasa_unbound
             metrics["design_sasa_bound_original"] = design_sasa_bound
@@ -1035,12 +1045,21 @@ class Analyze(Task):
             if self.delta_sasa_refolded:
                 cif_path_refolded = self.refold_cif_dir / f"{feat['id']}.cif"
 
+                if not cif_path_refolded.exists():
+                    msg = f"Refolded cif path does not exist. This can happen if a process was interrupted between writing the refold .npz file and the refold .cif file. Missing path: {cif_path_refolded}"
+                    print(msg)
+                    return None
+
                 # Compute delta sasa
                 (
                     delta_sasa_refolded,
                     design_sasa_unbound,
                     design_sasa_bound,
-                ) = get_delta_sasa(cif_path_refolded, resolved_atoms_target_mask)
+                ) = get_delta_sasa(
+                    cif_path_refolded,
+                    atom_target_mask=resolved_atoms_target_mask,
+                    atom_design_mask=resolved_atoms_design_mask,
+                )
 
                 metrics["delta_sasa_refolded"] = delta_sasa_refolded
                 metrics["design_sasa_unbound_refolded"] = design_sasa_unbound

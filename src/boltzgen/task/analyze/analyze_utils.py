@@ -97,7 +97,7 @@ def make_histogram(
 def get_best_folding_sample(folded):
     confidence = 0.8 * folded["design_to_target_iptm"] + 0.2 * folded["design_ptm"]
     best_idx = np.argmax(confidence)
-    
+
     # TODO: remove the "if k in folded"
     best_sample = {
         k: folded[k][best_idx] for k in const.eval_keys_confidence if k in folded
@@ -188,10 +188,19 @@ def count_noncovalents(feat):
         biotite_array, _ = hydride.add_hydrogen(biotite_array)
         hbond = biotite.structure.hbond(biotite_array)
     donor_idxs, acceptor_idxs = hbond[:, 0], hbond[:, 2]
-    cross_design_hbonds = (
-        biotite_array.is_design[donor_idxs] != biotite_array.is_design[acceptor_idxs]
+    donor_design_hbonds = int(
+        (
+            biotite_array.is_design[donor_idxs]
+            & ~biotite_array.is_chain_design[acceptor_idxs]
+        ).sum()
     )
-    metrics["plip_hbonds"] = int(cross_design_hbonds.sum())
+    acceptor_design_hbonds = int(
+        (
+            ~biotite_array.is_chain_design[donor_idxs]
+            & biotite_array.is_design[acceptor_idxs]
+        ).sum()
+    )
+    metrics["plip_hbonds"] = donor_design_hbonds + acceptor_design_hbonds
 
     # saltbridges
     pos_atoms = biotite_array[biotite_array.charge > 0]
@@ -204,10 +213,13 @@ def count_noncovalents(feat):
             (pos_neg_distances > 0.5) & (pos_neg_distances < 5.5)
         )
         # only keep the ones between design and non design
-        cross_design_saltbridges = (
-            pos_atoms.is_design[pos_idxs] != neg_atoms.is_design[neg_idxs]
+        pos_design_sb = int(
+            (pos_atoms.is_design[pos_idxs] & ~neg_atoms.is_chain_design[neg_idxs]).sum()
         )
-        metrics["plip_saltbridge"] = int(cross_design_saltbridges.sum())
+        neg_design_sb = int(
+            (~pos_atoms.is_chain_design[pos_idxs] & neg_atoms.is_design[neg_idxs]).sum()
+        )
+        metrics["plip_saltbridge"] = pos_design_sb + neg_design_sb
     else:
         metrics["plip_saltbridge"] = 0
     return metrics
@@ -629,9 +641,14 @@ def largest_hydrophobic_patch_area(cif_path, distance_cutoff=6.0):
     return max_patch_area
 
 
-def get_delta_sasa(path, atom_design_mask):
+def get_delta_sasa(
+    path,
+    atom_target_mask,                
+    atom_design_mask,           
+):
     stack = _load_stack(path)
     atoms = stack[0]
+
     res = [
         r.decode().strip() if isinstance(r, bytes) else str(r).strip()
         for r in atoms.res_name
@@ -645,23 +662,41 @@ def get_delta_sasa(path, atom_design_mask):
     radii = np.array(
         [_radius(rn, an, el) for rn, an, el in zip(res, atm, elem)], dtype=float
     )
-    area = sasa(atoms, probe_radius=1.4, point_number=960, vdw_radii=radii)
-    design_bound = area[atom_design_mask].sum()
 
-    ligand_atoms = atoms[atom_design_mask]
-    lig_res = [r for r, m in zip(res, atom_design_mask) if m]
-    lig_atm = [a for a, m in zip(atm, atom_design_mask) if m]
-    lig_elem = [e for e, m in zip(elem, atom_design_mask) if m]
+    
+    bound_mask = atom_design_mask | atom_target_mask
+    atoms_bound = atoms[bound_mask]
+    radii_bound = radii[bound_mask]
+
+    area_bound = sasa(
+        atoms_bound,
+        probe_radius=1.4,
+        point_number=960,
+        vdw_radii=radii_bound,
+    )
+    
+    target_in_bound = atom_target_mask[bound_mask]
+    target_bound    = area_bound[target_in_bound].sum()
+    
+    
+
+    target_atoms = atoms[atom_target_mask]
+    target_res = [r for r, m in zip(res, atom_target_mask) if m]
+    target_atm = [a for a, m in zip(atm, atom_target_mask) if m]
+    target_elem = [e for e, m in zip(elem, atom_target_mask) if m]
 
     radii_lig = np.array(
-        [_radius(rn, an, el) for rn, an, el in zip(lig_res, lig_atm, lig_elem)],
+        [_radius(rn, an, el) for rn, an, el in zip(target_res, target_atm, target_elem)],
         dtype=float,
     )
-    ligand_area = sasa(
-        ligand_atoms, probe_radius=1.4, point_number=960, vdw_radii=radii_lig
+    target_area = sasa(
+        target_atoms,
+        probe_radius=1.4,
+        point_number=960,
+        vdw_radii=radii_lig,
     )
-    delta = ligand_area.sum() - design_bound
-    return delta, ligand_area.sum(), design_bound
+    delta = target_area.sum() - target_bound
+    return delta, target_area.sum(), target_bound
 
 
 def compute_ss_metrics(dssp_pred, ss_conditioning_metricsed):
