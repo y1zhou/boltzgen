@@ -434,6 +434,7 @@ class Filter(Task):
                 self.df[col + "_z"] = (self.df[col] - mean) / std
 
         importances = {
+            "affinity_probability_binary1": 1.5,
             "design_iiptm": 1.0,
             "design_ptm": 0.5,
             "min_design_to_target_pae": -1.0,  # lower is better

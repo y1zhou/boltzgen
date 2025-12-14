@@ -30,5 +30,9 @@
     "plip_hbonds_refolded": {
         "mean": 7.099706654392513,
         "std": 4.456755351208993
+    },
+    "affinity_probability_binary1": {
+        "mean": 0.4726671722992441,
+        "std": 0.19092615494037402
     }
 }
