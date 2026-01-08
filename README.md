@@ -4,7 +4,8 @@
   <img src="assets/boltzgen.png" alt="BoltzGen logo" width="60%">
 
 [Paper](https://hannes-stark.com/assets/boltzgen.pdf) | 
-[Slack](https://boltz.bio/join-slack) <br> <br>
+[Slack](https://boltz.bio/join-slack) | 
+[Video](https://www.youtube.com/watch?v=9d_QWUUI1Qo) <br> <br>
  ![alt text](assets/cover.png)
 </div>
 
