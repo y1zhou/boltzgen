@@ -1031,12 +1031,11 @@ def parse_redesign_yaml(
     path: Path,
     tokenized: Tokenized,
 ) -> Target:
-    """parse a design mask override yaml file"""
+    """Parse a design mask override yaml file."""
+    if path.suffix not in {".yaml", ".yml"}:
+        raise ValueError(f"Unsupported file type: {str(path)}")
     with path.open("r") as file:
-        if path.suffix == ".yaml":
-            data = yaml.safe_load(file)
-        else:
-            raise ValueError(f"Unsupported file type: {str(path)}")
+        data = yaml.safe_load(file)
     target = parse_redesign_schema(data, tokenized)
 
     return target
@@ -1064,10 +1063,10 @@ class YamlDesignParser:
     ) -> Target:
         """Parse a Boltz input yaml / json."""
         with path.open("r") as file:
-            if path.suffix == ".yaml":
+            if path.suffix in {".yaml", ".yml"}:
                 data = yaml.safe_load(file)
             elif path.suffix == ".pdb":
-                data = parse_pdb(file)
+                data = parse_pdb(str(path))
             else:
                 raise ValueError(f"Unsupported file type: {str(path)}")
 
